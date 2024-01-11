@@ -1,0 +1,104 @@
+# US Household Income (Data Cleaning)
+
+
+SELECT *
+FROM us_project.us_household_income_statistics
+;
+
+SELECT *
+FROM us_project.us_household_income
+;
+
+
+# Renaming Column's name
+ALTER TABLE us_project.us_household_income_statistics RENAME COLUMN `ο»Ώid` TO `id`
+;
+
+
+# Checking if we are missing any values by comparing the number of the IDs from both columns
+SELECT COUNT(id)
+FROM us_project.us_household_income_statistics
+;
+
+SELECT COUNT(id)
+FROM us_project.us_household_income
+;
+ 
+ # Checking for dublicates
+ SELECT id, COUNT(id)
+ FROM us_project.us_household_income
+ GROUP BY id
+ HAVING COUNT(id) > 1
+ ;
+ 
+ 
+ # Deleting dublicates
+ DELETE FROM us_project.us_household_income
+ WHERE row_id IN (
+	SELECT row_id
+	FROM (
+		SELECT row_id,
+		id,
+		ROW_NUMBER() OVER(PARTITION BY id ORDER BY id) AS row_num
+		FROM us_project.us_household_income
+		) AS dublicates
+	WHERE row_num > 1
+		)
+ ;
+ 
+ 
+ # Checking for dublicates
+ SELECT id, COUNT(id)
+ FROM us_project.us_household_income_statistics
+ GROUP BY id
+ HAVING COUNT(id) > 1
+ ;
+ 
+ 
+# Checking for spelling errors
+SELECT State_Name, COUNT(State_Name)
+FROM us_project.us_household_income
+GROUP BY State_Name
+;
+
+UPDATE us_project.us_household_income
+SET State_Name = 'Georgia'
+WHERE State_Name = 'georia'
+;
+
+UPDATE us_project.us_household_income
+SET State_Name = 'Alabama'
+WHERE State_Name = 'alabama'
+;
+
+
+# Column Population
+SELECT *
+FROM us_project.us_household_income
+WHERE County = 'Autauga County'
+;
+
+UPDATE us_project.us_household_income
+SET Place = 'Autaugaville'
+WHERE County = 'Autauga County'
+AND City = 'Vinemont'
+;
+
+
+# Checking for spelling errors
+SELECT Type, COUNT(type)
+FROM us_project.us_household_income
+GROUP BY Type
+;
+
+UPDATE us_project.us_household_income
+SET Type = 'Borough'
+WHERE Type = 'Boroughs'
+;
+
+# Checking for any NULLS
+SELECT ALand, AWater
+FROM us_project.us_household_income
+WHERE (ALand = 0 OR ALand = '' OR ALand IS NULL)
+AND (AWater = 0 OR AWater = '' OR AWater IS NULL)
+;
